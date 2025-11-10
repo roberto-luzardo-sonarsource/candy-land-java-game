@@ -70,17 +70,23 @@ This project uses GitHub Actions for continuous integration with automated testi
 
 To enable SonarQube analysis in your fork:
 
-1. **Create a SonarCloud account** at https://sonarcloud.io
-2. **Set up your organization** or use an existing one  
-3. **Add repository secrets** in GitHub Settings > Secrets and variables > Actions:
-   - `SONAR_TOKEN`: Your SonarCloud authentication token
-   - `SONAR_ORGANIZATION`: Your SonarCloud organization key
+1. **Set up SonarQube Server** - Ensure you have access to a SonarQube Server instance
+2. **Create a Project** in SonarQube Server with key `candy-land-java-game`
+3. **Generate Authentication Token** in SonarQube Server
+4. **Add repository secrets** in GitHub Settings > Secrets and variables > Actions:
+   - `SONAR_TOKEN`: Your SonarQube Server authentication token
+   - `SONAR_HOST_URL`: Your SonarQube Server URL (e.g., `https://your-sonarqube-server.com`)
 
-#### Getting Your SonarCloud Token
-1. Log in to SonarCloud
+#### Getting Your SonarQube Server Token
+1. Log in to your SonarQube Server
 2. Go to **My Account** > **Security** 
 3. Generate a new token with appropriate permissions
 4. Copy the token and add as `SONAR_TOKEN` in GitHub repository secrets
+
+#### Project Setup in SonarQube Server
+1. Create a new project in SonarQube Server
+2. Use project key: `candy-land-java-game`
+3. Configure quality gates and analysis settings as needed
 
 ### Quality Gates
 The SonarQube analysis checks for:
@@ -267,11 +273,10 @@ open target/site/jacoco/index.html
 
 ### Code Quality Analysis
 ```bash
-# Run SonarQube analysis locally (requires SONAR_TOKEN environment variable)
+# Run SonarQube analysis locally (requires SONAR_TOKEN and SONAR_HOST_URL environment variables)
 mvn clean verify sonar:sonar \
   -Dsonar.projectKey=candy-land-java-game \
-  -Dsonar.organization=your-organization \
-  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.host.url=$SONAR_HOST_URL \
   -Dsonar.login=$SONAR_TOKEN
 ```
 
