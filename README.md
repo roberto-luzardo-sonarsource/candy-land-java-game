@@ -1,6 +1,6 @@
 # Candy Land Game
 
-A Java implementation of the classic Candy Land board game supporting up to 3 players with a graphical user interface.
+A Java implementation of the classic Candy Land board game supporting up to 3 players with a graphical user interface. This project includes automated testing, continuous integration, and code quality analysis with SonarQube.
 
 ## Features
 
@@ -13,6 +13,9 @@ A Java implementation of the classic Candy Land board game supporting up to 3 pl
 - **Complete Game Board**: 134-space board with special character locations
 - **Turn-based Play**: Players take turns drawing cards and moving
 - **Win Condition**: First player to reach the end wins
+- **Automated Testing**: Comprehensive unit test suite with code coverage
+- **Code Quality**: Continuous code quality analysis with SonarQube
+- **CI/CD Pipeline**: GitHub Actions workflow for automated builds and analysis
 
 ## Screenshots
 
@@ -47,6 +50,44 @@ src/
 
 - Java 17 or higher
 - Maven 3.6 or higher
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration with automated testing and code quality analysis.
+
+### Workflow Triggers
+- **Push to main branch**: Full build, test, and SonarQube analysis
+- **Pull requests**: Build, test, and analysis for code review
+
+### Pipeline Features
+- **Automated Testing**: Runs complete test suite on every commit
+- **Code Coverage**: Generates coverage reports with JaCoCo
+- **SonarQube Analysis**: Static code analysis for quality, security, and maintainability
+- **Dependency Caching**: Optimized build times with Maven and SonarQube caching
+- **Artifact Upload**: Test results and analysis artifacts for review
+
+### Setting Up SonarQube Integration
+
+To enable SonarQube analysis in your fork:
+
+1. **Create a SonarCloud account** at https://sonarcloud.io
+2. **Set up your organization** or use an existing one  
+3. **Add repository secrets** in GitHub Settings > Secrets and variables > Actions:
+   - `SONAR_TOKEN`: Your SonarCloud authentication token
+   - `SONAR_ORGANIZATION`: Your SonarCloud organization key
+
+#### Getting Your SonarCloud Token
+1. Log in to SonarCloud
+2. Go to **My Account** > **Security** 
+3. Generate a new token with appropriate permissions
+4. Copy the token and add as `SONAR_TOKEN` in GitHub repository secrets
+
+### Quality Gates
+The SonarQube analysis checks for:
+- **Code Coverage**: Minimum coverage thresholds
+- **Security**: Vulnerabilities and security hotspots
+- **Maintainability**: Code smells and technical debt
+- **Reliability**: Bugs and potential runtime issues
 
 ## Building and Running
 
@@ -206,12 +247,33 @@ A debug configuration is available for running the game in debug mode:
 
 ## Testing
 
-The project includes comprehensive unit tests:
+The project includes comprehensive unit tests with code coverage reporting:
 
 - `PlayerTest`: Tests player creation, movement, and state management
 - `BoardTest`: Tests board functionality, special locations, and win conditions
+- `CandyLandGameTest`: Tests core game logic and player management
 
-Run tests with: `mvn test`
+### Running Tests Locally
+```bash
+# Run all tests
+mvn test
+
+# Run tests with coverage report
+mvn clean test jacoco:report
+
+# View coverage report (opens in browser)
+open target/site/jacoco/index.html
+```
+
+### Code Quality Analysis
+```bash
+# Run SonarQube analysis locally (requires SONAR_TOKEN environment variable)
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=candy-land-java-game \
+  -Dsonar.organization=your-organization \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.login=$SONAR_TOKEN
+```
 
 ## Development
 
@@ -221,10 +283,28 @@ Run tests with: `mvn test`
 - Include Javadoc comments for public methods
 - Maintain separation of concerns between classes
 
+### Contributing
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes and add tests
+4. Run tests locally: `mvn test`
+5. Ensure code quality: Check SonarQube analysis results
+6. Commit your changes: `git commit -m "Add your feature"`
+7. Push to the branch: `git push origin feature/your-feature`
+8. Submit a pull request
+
 ### Adding Features
 - New game rules can be added to the `Board` class
 - Additional card types can be implemented in the `Card` class
 - Game variations can be added to `CandyLandGame`
+- GUI enhancements can be made to the components in the `gui` package
+
+### Code Quality Standards
+The project maintains high code quality through:
+- **Unit Testing**: Comprehensive test coverage for all core functionality
+- **Static Analysis**: SonarQube analysis for code quality, security, and maintainability
+- **Code Coverage**: JaCoCo integration for test coverage reporting
+- **Continuous Integration**: Automated testing and analysis on every commit
 
 ## License
 
