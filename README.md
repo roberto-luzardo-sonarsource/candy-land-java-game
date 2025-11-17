@@ -4,7 +4,8 @@ A Java implementation of the classic Candy Land board game supporting up to 3 pl
 
 ## Features
 
-- **1-3 Players**: Support for up to 3 players
+- **1-3 Players**: Support for up to 3 players in local or online multiplayer modes
+- **Online Multiplayer**: Connect to a game server and play with friends over the network
 - **Graphical User Interface**: Full GUI with visual game board and controls
 - **Classic Gameplay**: Traditional Candy Land rules with colored cards and special character cards
 - **Interactive Board**: Visual representation of the 134-space board with colored spaces
@@ -31,19 +32,34 @@ The game features:
 src/
 ├── main/java/com/example/candyland/
 │   ├── gui/
-│   │   ├── CandyLandGUI.java       # Main GUI window and application entry point
-│   │   ├── PlayerSetupDialog.java  # Player setup dialog
-│   │   ├── GameBoardPanel.java     # Visual game board panel
-│   │   └── GameControlPanel.java   # Game controls and information panel
-│   ├── CandyLandGame.java          # Core game logic and rules
-│   ├── Player.java                 # Player representation
-│   ├── Board.java                  # Game board with spaces and special locations
-│   ├── Card.java                   # Game cards (color and character cards)
-│   ├── Deck.java                   # Card deck management
-│   └── Color.java                  # Board colors enumeration
+│   │   ├── CandyLandGUI.java                # Main GUI window and application entry point
+│   │   ├── PlayerSetupDialog.java           # Player setup dialog
+│   │   ├── MultiplayerConnectionDialog.java # Multiplayer connection dialog
+│   │   ├── GameBoardPanel.java              # Visual game board panel
+│   │   └── GameControlPanel.java            # Game controls and information panel
+│   ├── network/
+│   │   ├── server/
+│   │   │   └── CandyLandServer.java         # Multiplayer game server
+│   │   ├── client/
+│   │   │   └── GameClient.java              # Network client for multiplayer
+│   │   ├── GameMessage.java                 # Base class for network messages
+│   │   ├── JoinGameMessage.java             # Join game request message
+│   │   ├── PlayerJoinedMessage.java         # Player joined notification
+│   │   ├── GameStateMessage.java            # Game state synchronization
+│   │   ├── DrawCardMessage.java             # Card draw request
+│   │   ├── CardDrawnMessage.java            # Card drawn notification
+│   │   ├── GameOverMessage.java             # Game over notification
+│   │   └── ErrorMessage.java                # Error message
+│   ├── CandyLandGame.java                   # Core game logic and rules
+│   ├── Player.java                          # Player representation
+│   ├── Board.java                           # Game board with spaces and special locations
+│   ├── Card.java                            # Game cards (color and character cards)
+│   ├── Deck.java                            # Card deck management
+│   └── Color.java                           # Board colors enumeration
 └── test/java/com/example/candyland/
-    ├── PlayerTest.java             # Unit tests for Player class
-    └── BoardTest.java              # Unit tests for Board class
+    ├── PlayerTest.java                      # Unit tests for Player class
+    ├── BoardTest.java                       # Unit tests for Board class
+    └── CandyLandGameTest.java               # Unit tests for CandyLandGame class
 ```
 
 ## Prerequisites
@@ -109,7 +125,7 @@ The SonarQube analysis checks for:
    mvn test
    ```
 
-3. **Run the GUI game:**
+3. **Run the GUI game (local mode):**
    ```bash
    mvn exec:java
    ```
@@ -118,6 +134,60 @@ The SonarQube analysis checks for:
    ```bash
    mvn clean compile
    ```
+
+### Online Multiplayer Mode
+
+#### Starting the Game Server
+
+To host an online multiplayer game, first start the server:
+
+```bash
+# Using Maven (default port 8888)
+mvn exec:java -Dexec.mainClass="com.example.candyland.network.server.CandyLandServer"
+
+# Or specify a custom port
+mvn exec:java -Dexec.mainClass="com.example.candyland.network.server.CandyLandServer" -Dexec.args="9999"
+
+# Or compile and run directly
+mvn compile
+java -cp target/classes com.example.candyland.network.server.CandyLandServer 8888
+```
+
+The server will start and listen for client connections. It supports:
+- Multiple game rooms (players specify a room ID when joining)
+- Up to 3 players per game room
+- Automatic game state synchronization
+- Connection management and error handling
+
+#### Joining an Online Game
+
+1. Run the game client:
+   ```bash
+   mvn exec:java
+   ```
+
+2. Select "Join Online Game" from the welcome dialog
+
+3. Enter connection details:
+   - **Server Host**: IP address or hostname (use `localhost` for local testing)
+   - **Server Port**: Port number (default: 8888)
+   - **Your Name**: Your player name
+   - **Room ID**: Game room identifier (use the same ID to play with friends)
+
+4. Click "Connect" and wait for other players to join
+
+5. Game starts automatically when 2+ players have joined
+
+#### Network Architecture
+
+The multiplayer system uses a client-server architecture:
+
+- **Server (`CandyLandServer`)**: Manages game rooms, player connections, and game state
+- **Client (`GameClient`)**: Connects to server and handles network communication
+- **Messages**: Serialized Java objects for game events and state updates
+- **Protocol**: TCP/IP sockets with ObjectInputStream/ObjectOutputStream
+
+Game rooms are isolated - each room ID represents a separate game instance.
 
 ### Using VS Code Tasks
 
@@ -136,12 +206,15 @@ A debug configuration is available for running the game in debug mode:
 
 ## How to Play
 
-1. **Start the Game**: Run the application using one of the methods above
-2. **Setup Players**: 
+### Local Game Mode
+
+1. **Start the Game**: Run the application using `mvn exec:java`
+2. **Select "Local Game"** from the welcome dialog
+3. **Setup Players**: 
    - A dialog will appear asking for the number of players (1-3)
    - Enter names for each player
    - Click "Start Game" to begin
-3. **Playing the Game**:
+4. **Playing the Game**:
    - The game board will display with colored spaces in a snake-like pattern
    - Players are represented by colored circles on the board
    - Click "Draw Card" to take your turn
@@ -149,11 +222,31 @@ A debug configuration is available for running the game in debug mode:
      - Color cards: Move to the next space of that color
      - Double color cards: Move to the second occurrence of that color
      - Special character cards: Move to the character's specific location
-4. **Game Information**:
+5. **Game Information**:
    - Current player is displayed in the control panel
    - Player positions are shown in real-time
    - Game log tracks all moves and events
-5. **Winning**: The first player to reach or pass the finish line (golden border) wins!
+6. **Winning**: The first player to reach or pass the finish line (golden border) wins!
+
+### Online Multiplayer Mode
+
+1. **Start the Server**: One player must start the game server (see "Starting the Game Server" above)
+2. **Launch the Game**: Each player runs `mvn exec:java`
+3. **Select "Join Online Game"** from the welcome dialog
+4. **Connect**: 
+   - Enter the server's host address (or `localhost` if playing on the same machine)
+   - Enter the server port (default: 8888)
+   - Enter your player name
+   - Enter a Room ID (all players must use the same Room ID to play together)
+   - Click "Connect"
+5. **Wait for Players**: The game starts automatically when 2 or more players have joined
+6. **Taking Turns**:
+   - Only the current player can draw a card
+   - The "Draw Card" button is only enabled for the active player
+   - Game state updates automatically for all connected players
+   - Move log shows all player actions in real-time
+7. **Game Progress**: Watch the board update as players take turns
+8. **Winning**: First player to reach the end wins - all players are notified!
 
 ## GUI Features
 

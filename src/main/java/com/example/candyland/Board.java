@@ -106,4 +106,30 @@ public class Board {
     public boolean isWinningSpace(int position) {
         return position >= boardSize - 1;
     }
+    
+    /**
+     * Gets the winning position on the board.
+     * 
+     * @return the winning position
+     */
+    public int getWinningPosition() {
+        return boardSize - 1;
+    }
+    
+    /**
+     * Calculates the new position based on a drawn card.
+     * 
+     * @param currentPosition the current position
+     * @param card the card that was drawn
+     * @return the new position after the move
+     */
+    public int calculateNewPosition(int currentPosition, Card card) {
+        if (card.isSpecialCharacter()) {
+            int specialPos = getSpecialCharacterPosition(card.getSpecialCharacter());
+            // Only move forward to special characters, never backward
+            return Math.max(currentPosition, specialPos);
+        } else {
+            return findNextColorSpace(currentPosition, card.getColor(), card.isDouble());
+        }
+    }
 }

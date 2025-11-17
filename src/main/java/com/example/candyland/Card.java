@@ -1,9 +1,13 @@
 package com.example.candyland;
 
+import java.io.Serializable;
+
 /**
  * Represents a card in the Candy Land game.
  */
-public class Card {
+public class Card implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private final Color color;
     private final boolean isDouble;
     private final String specialCharacter;

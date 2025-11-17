@@ -1,16 +1,24 @@
 package com.example.candyland.gui;
 
 import com.example.candyland.*;
+import com.example.candyland.network.client.GameClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 /**
  * Panel containing game controls and information display.
  */
 public class GameControlPanel extends JPanel {
+    private static final Logger logger = LoggerFactory.getLogger(GameControlPanel.class);
+    
     private final transient CandyLandGame game;
     private final transient GameBoardPanel boardPanel;
+    private final transient CandyLandGUI parentGUI;
     private JButton drawCardButton;
     private JLabel currentPlayerLabel;
     private JLabel gameStatusLabel;
@@ -23,8 +31,20 @@ public class GameControlPanel extends JPanel {
      * @param boardPanel the board panel to update
      */
     public GameControlPanel(CandyLandGame game, GameBoardPanel boardPanel) {
+        this(game, boardPanel, null);
+    }
+    
+    /**
+     * Creates a new game control panel with multiplayer support.
+     * 
+     * @param game the game instance
+     * @param boardPanel the board panel to update
+     * @param parentGUI the parent GUI (for multiplayer)
+     */
+    public GameControlPanel(CandyLandGame game, GameBoardPanel boardPanel, CandyLandGUI parentGUI) {
         this.game = game;
         this.boardPanel = boardPanel;
+        this.parentGUI = parentGUI;
         initializeComponents();
         updateDisplay();
     }
@@ -96,6 +116,24 @@ public class GameControlPanel extends JPanel {
             return;
         }
         
+        // Handle multiplayer
+        if (parentGUI != null && parentGUI.isMultiplayer()) {
+            try {
+                GameClient client = parentGUI.getNetworkClient();
+                if (client != null && client.isConnected()) {
+                    client.drawCard(parentGUI.getCurrentPlayerName());
+                }
+            } catch (IOException ex) {
+                logger.error("Error sending draw card request", ex);
+                JOptionPane.showMessageDialog(this,
+                    "Error communicating with server: " + ex.getMessage(),
+                    "Network Error",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+            return;
+        }
+        
+        // Local game logic
         Player currentPlayer = game.getCurrentPlayer();
         Card drawnCard = game.getDeck().drawCard();
         
@@ -107,13 +145,12 @@ public class GameControlPanel extends JPanel {
         // Log the move
         String moveText = currentPlayer.getName() + " drew: " + drawnCard + 
                          " (moved from " + oldPosition + " to " + newPosition + ")\n";
-        gameLog.append(moveText);
-        gameLog.setCaretPosition(gameLog.getDocument().getLength());
+        addLogMessage(moveText);
         
         // Check for winner
         if (game.getBoard().isWinningSpace(newPosition)) {
             game.setWinner(currentPlayer);
-            gameLog.append("\n🎉 " + currentPlayer.getName() + " WINS! 🎉\n");
+            addLogMessage("\n🎉 " + currentPlayer.getName() + " WINS! 🎉\n");
             drawCardButton.setEnabled(false);
             JOptionPane.showMessageDialog(this, 
                 currentPlayer.getName() + " wins the game!", 
@@ -124,6 +161,27 @@ public class GameControlPanel extends JPanel {
         }
         
         // Update display
+        updateDisplay();
+        boardPanel.updatePlayers(game.getPlayers());
+    }
+    
+    /**
+     * Adds a message to the game log.
+     * 
+     * @param message the message to add
+     */
+    public void addLogMessage(String message) {
+        gameLog.append(message);
+        if (!message.endsWith("\n")) {
+            gameLog.append("\n");
+        }
+        gameLog.setCaretPosition(gameLog.getDocument().getLength());
+    }
+    
+    /**
+     * Updates the game state display.
+     */
+    public void updateGameState() {
         updateDisplay();
         boardPanel.updatePlayers(game.getPlayers());
     }
