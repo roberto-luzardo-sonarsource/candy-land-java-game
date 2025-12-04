@@ -4,16 +4,23 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dialog for setting up players at the start of the game.
  */
 public class PlayerSetupDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
+    
     private List<String> playerNames;
+    private Map<String, ImageIcon> playerAvatars;
+    private Map<String, String> playerAvatarPaths;
     private boolean setupComplete;
     private JSpinner playerCountSpinner;
     private JTextField[] nameFields;
+    private JButton[] avatarButtons;
     private JPanel namePanel;
     
     /**
@@ -24,6 +31,8 @@ public class PlayerSetupDialog extends JDialog {
     public PlayerSetupDialog(Frame parent) {
         super(parent, "Setup Players", true);
         playerNames = new ArrayList<>();
+        playerAvatars = new HashMap<>();
+        playerAvatarPaths = new HashMap<>();
         setupComplete = false;
         initializeComponents();
     }
@@ -95,20 +104,61 @@ public class PlayerSetupDialog extends JDialog {
         namePanel.removeAll();
         int playerCount = (Integer) playerCountSpinner.getValue();
         nameFields = new JTextField[playerCount];
+        avatarButtons = new JButton[playerCount];
+        
+        namePanel.setLayout(new GridLayout(playerCount, 3, 5, 5));
         
         for (int i = 0; i < playerCount; i++) {
+            final int playerIndex = i;
+            
+            // Player label
             namePanel.add(new JLabel("Player " + (i + 1) + ":"));
+            
+            // Name field
             nameFields[i] = new JTextField("Player " + (i + 1));
             namePanel.add(nameFields[i]);
-        }
-        
-        // Add empty labels to fill the grid
-        while (namePanel.getComponentCount() < 6) {
-            namePanel.add(new JLabel(""));
+            
+            // Avatar button
+            avatarButtons[i] = new JButton("Select Avatar");
+            avatarButtons[i].addActionListener(e -> selectAvatar(playerIndex));
+            namePanel.add(avatarButtons[i]);
         }
         
         revalidate();
         repaint();
+    }
+    
+    /**
+     * Opens avatar selection dialog for a player.
+     * 
+     * @param playerIndex the index of the player
+     */
+    private void selectAvatar(int playerIndex) {
+        String playerName = nameFields[playerIndex].getText().trim();
+        if (playerName.isEmpty()) {
+            playerName = "Player " + (playerIndex + 1);
+        }
+        
+        AvatarSelectionDialog avatarDialog = new AvatarSelectionDialog(
+            (Frame) getOwner(), playerName);
+        avatarDialog.setVisible(true);
+        
+        if (avatarDialog.isConfirmed()) {
+            ImageIcon avatar = avatarDialog.getSelectedAvatar();
+            String avatarPath = avatarDialog.getSelectedAvatarPath();
+            
+            if (avatar != null) {
+                playerAvatars.put(playerName, avatar);
+                playerAvatarPaths.put(playerName, avatarPath);
+                avatarButtons[playerIndex].setText("✓ Avatar Set");
+                avatarButtons[playerIndex].setForeground(new Color(0, 150, 0));
+            } else {
+                playerAvatars.remove(playerName);
+                playerAvatarPaths.remove(playerName);
+                avatarButtons[playerIndex].setText("Select Avatar");
+                avatarButtons[playerIndex].setForeground(null);
+            }
+        }
     }
     
     /**
@@ -148,5 +198,34 @@ public class PlayerSetupDialog extends JDialog {
      */
     public boolean isSetupComplete() {
         return setupComplete;
+    }
+    
+    /**
+     * Gets the avatar for a specific player.
+     * 
+     * @param playerName the player's name
+     * @return the player's avatar, or null if not set
+     */
+    public ImageIcon getPlayerAvatar(String playerName) {
+        return playerAvatars.get(playerName);
+    }
+    
+    /**
+     * Gets the avatar path for a specific player.
+     * 
+     * @param playerName the player's name
+     * @return the player's avatar file path, or null if not set
+     */
+    public String getPlayerAvatarPath(String playerName) {
+        return playerAvatarPaths.get(playerName);
+    }
+    
+    /**
+     * Gets all player avatars.
+     * 
+     * @return map of player names to avatars
+     */
+    public Map<String, ImageIcon> getAllPlayerAvatars() {
+        return new HashMap<>(playerAvatars);
     }
 }

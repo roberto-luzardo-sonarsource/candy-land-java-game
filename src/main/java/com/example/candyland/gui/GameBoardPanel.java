@@ -140,11 +140,22 @@ public class GameBoardPanel extends JPanel {
             int playerX = spaceX + (SPACE_SIZE - PLAYER_SIZE) / 2 + offsetX;
             int playerY = spaceY + (SPACE_SIZE - PLAYER_SIZE) / 2 + offsetY;
             
-            // Draw player as a colored circle
-            g2d.setColor(playerColors[i % playerColors.length]);
-            g2d.fill(new Ellipse2D.Double(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE));
-            g2d.setColor(java.awt.Color.WHITE);
-            g2d.draw(new Ellipse2D.Double(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE));
+            // Draw player avatar if available, otherwise draw colored circle
+            if (player.hasAvatar() && player.getAvatar() != null) {
+                // Draw avatar image
+                Image avatarImage = player.getAvatar().getImage();
+                g2d.drawImage(avatarImage, playerX, playerY, PLAYER_SIZE, PLAYER_SIZE, null);
+                // Draw border around avatar
+                g2d.setColor(playerColors[i % playerColors.length]);
+                g2d.setStroke(new BasicStroke(2));
+                g2d.draw(new Ellipse2D.Double(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE));
+            } else {
+                // Draw player as a colored circle
+                g2d.setColor(playerColors[i % playerColors.length]);
+                g2d.fill(new Ellipse2D.Double(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE));
+                g2d.setColor(java.awt.Color.WHITE);
+                g2d.draw(new Ellipse2D.Double(playerX, playerY, PLAYER_SIZE, PLAYER_SIZE));
+            }
         }
     }
     
@@ -167,11 +178,24 @@ public class GameBoardPanel extends JPanel {
         
         java.awt.Color[] playerColors = {java.awt.Color.BLACK, java.awt.Color.DARK_GRAY, java.awt.Color.GRAY};
         for (int i = 0; i < players.size(); i++) {
-            g2d.setColor(playerColors[i % playerColors.length]);
-            g2d.fill(new Ellipse2D.Double(legendX + 10, legendY + 30 + (double) i * 20, PLAYER_SIZE, PLAYER_SIZE));
+            Player player = players.get(i);
+            double yPos = legendY + 30.0 + i * 20.0;
+            
+            // Draw avatar or colored circle for legend
+            if (player.hasAvatar() && player.getAvatar() != null) {
+                Image avatarImage = player.getAvatar().getImage();
+                g2d.drawImage(avatarImage, legendX + 10, legendY + 30 + i * 20, PLAYER_SIZE, PLAYER_SIZE, null);
+                g2d.setColor(playerColors[i % playerColors.length]);
+                g2d.setStroke(new BasicStroke(1));
+                g2d.draw(new Ellipse2D.Double(legendX + 10.0, yPos, PLAYER_SIZE, PLAYER_SIZE));
+            } else {
+                g2d.setColor(playerColors[i % playerColors.length]);
+                g2d.fill(new Ellipse2D.Double(legendX + 10.0, yPos, PLAYER_SIZE, PLAYER_SIZE));
+            }
+            
             g2d.setColor(java.awt.Color.BLACK);
             g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 10));
-            g2d.drawString(players.get(i).getName(), legendX + 35, legendY + 42 + i * 20);
+            g2d.drawString(player.getName(), legendX + 35, legendY + 42 + i * 20);
         }
     }
     

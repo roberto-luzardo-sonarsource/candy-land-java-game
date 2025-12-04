@@ -196,9 +196,12 @@ public class CandyLandGame {
      * Adds a player to the game by name.
      * 
      * @param name the player's name
+     * @return the newly created Player object
      */
-    public void addPlayer(String name) {
-        addPlayer(new Player(name));
+    public Player addPlayer(String name) {
+        Player player = new Player(name);
+        addPlayer(player);
+        return player;
     }
     
     /**

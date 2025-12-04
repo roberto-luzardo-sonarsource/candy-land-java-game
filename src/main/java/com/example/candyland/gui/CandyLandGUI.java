@@ -128,9 +128,16 @@ public class CandyLandGUI extends JFrame {
             List<String> playerNames = setupDialog.getPlayerNames();
             game = new CandyLandGame();
             
-            // Add players to the game
+            // Add players to the game with their avatars
             for (String name : playerNames) {
-                game.addPlayer(name);
+                Player player = game.addPlayer(name);
+                // Set avatar if one was selected
+                ImageIcon avatar = setupDialog.getPlayerAvatar(name);
+                String avatarPath = setupDialog.getPlayerAvatarPath(name);
+                if (avatar != null) {
+                    player.setAvatar(avatar);
+                    player.setAvatarPath(avatarPath);
+                }
             }
         }
     }
