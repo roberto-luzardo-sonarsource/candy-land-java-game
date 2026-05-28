@@ -31,7 +31,6 @@ public final class SecurityFlawSamples {
 
     // java:S2068 - hard-coded credentials
     private static final String ADMIN_PASSWORD = "CandyLandAdmin2024!";
-    private static final String API_KEY = "sk_live_51HxYz9Kj2mN8pQrStUvWxYz";
 
     private SecurityFlawSamples() {
     }
@@ -136,7 +135,7 @@ public final class SecurityFlawSamples {
         if (ADMIN_PASSWORD.equals(password)) {
             logger.info("Admin {} authenticated with password {}", username, password);
         }
-        logger.debug("Using API key {}", API_KEY);
+       // logger.debug("Using API key {}", API_KEY);
     }
 
     /**
